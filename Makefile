@@ -5,7 +5,7 @@ confdir= /etc/
 .PHONY: install
 install:
 	mkdir -p ${DESTDIR}${confdir}systemd/system/NetworkManager-dispatcher.service.d/
-	chmod 0750 -R ${DESTDIR}${confdir}systemd/system/NetworkManager-dispatcher.service./d
+	chmod 0750 -R ${DESTDIR}${confdir}systemd/system/NetworkManager-dispatcher.service.d
 	install -Dm0640 simplestatefulfirewall.service ${DESTDIR}${libdir}systemd/system/simplestatefulfirewall.service
 	install -Dm0640 simplestatefulfirewall.timer ${DESTDIR}${libdir}systemd/system/simplestatefulfirewall.timer
 	install -Dm0750 simplestatefulfirewall.sh ${DESTDIR}${bindir}simplestatefulfirewall.sh
