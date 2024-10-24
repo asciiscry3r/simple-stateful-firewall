@@ -36,6 +36,7 @@ function install_settingstosysctl {
 	sudo sysctl -w net.ipv6.conf."${i}".use_tempaddr=2
 	sudo sysctl -w net.ipv6.conf."${i}".rpl_seg_enabled=0
 	sudo sysctl -w net.ipv6.conf."${i}".disable_ipv6=1
+	echo "simplestatefulfirewall: Applied sysctl settings for interface" | sudo tee /dev/kmsg
     done
 }
 
@@ -62,6 +63,8 @@ ip6tables -X
 ip6tables -t raw -X
 ip6tables -t nat -X
 ip6tables -t mangle -X
+
+echo "simplestatefulfirewall: Deleted previous iptables settings" | sudo tee /dev/kmsg
 
 #### IpV4
 
@@ -102,7 +105,7 @@ iptables -A bad_tcp_packets -p tcp  -m limit ! --syn -m state --state NEW -j LOG
 --log-prefix "Iptables: Drop new not syn: "
 iptables -A bad_tcp_packets -p tcp ! --syn -m state --state NEW -j DROP
 
-# iptables -A INPUT -m addrtype --dst-type BROADCAST -j LOG_AND_DROP
+####
 iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 iptables -A INPUT -i lo -s 127.0.0.1 -j ACCEPT
 iptables -A INPUT -p icmp -s 0/0 --icmp-type 8 -j ACCEPT
@@ -154,12 +157,13 @@ iptables -A OUTPUT -p tcp -j bad_tcp_packets
 iptables -A OUTPUT -s ${BLOCKLIST} -j LOG_AND_DROP_OUT
 iptables -A OUTPUT -m string --algo bm --string “BitTorrent” -j LOG_AND_DROP_T
 iptables -A OUTPUT -m limit --limit 3/minute --limit-burst 3 -j LOG --log-prefix "Iptables: IPT OUTPUT packet died: "
-# iptables -A OUTPUT -m owner --gid-owner lock_internet -j LOG_AND_DROP_OUT
 
 iptables -A OUTPUT -o lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 iptables -A OUTPUT -o lo -j LOG_AND_DROP_OUT
 iptables -A OUTPUT -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 iptables -A OUTPUT -j LOG_AND_DROP_OUT
+
+echo "simplestatefulfirewall: Applied IPV4 rules" | sudo tee /dev/kmsg
 
 #### IpV6
 
@@ -194,6 +198,7 @@ ip6tables -A bad_tcp_packets -p tcp  -m limit ! --syn -m state --state NEW -j LO
 --log-prefix "Iptables: Drop new not syn: "
 ip6tables -A bad_tcp_packets -p tcp ! --syn -m state --state NEW -j DROP
 
+####
 ip6tables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 ip6tables -A INPUT -i lo -s ::1 -j ACCEPT
 ip6tables -A icmp_packets -p ipv6-icmp -s 0/0 --icmpv6-type 8 -j ACCEPT
@@ -247,6 +252,8 @@ ip6tables -A INPUT -j LOG_AND_REJECT
 ip6tables -t raw -A PREROUTING -m rpfilter --invert -j DROP
 ip6tables -t raw -A PREROUTING -m length --length 8 -j DROP
 
+echo "simplestatefulfirewall: Applied IPV6 rules" | sudo tee /dev/kmsg
+
 #### Mangle
 
 iptables -t mangle -A PREROUTING -m rpfilter --invert -j DROP
@@ -256,6 +263,8 @@ iptables -t mangle -A PREROUTING -j ACCEPT
 ip6tables -t mangle -A PREROUTING -m rpfilter --invert -j DROP
 ip6tables -t mangle -A PREROUTING -m length --length 8 -j DROP
 ip6tables -t mangle -A PREROUTING -j ACCEPT
+
+echo "simplestatefulfirewall: Applied Mangle rules" | sudo tee /dev/kmsg
 
 
 release=`grep -e '^ID=' /etc/os-release |  cut -c 4-`
@@ -272,8 +281,11 @@ if [[ $release == 'arch' ]]; then
     systemctl start ip6tables
     systemctl restart ip6tables
 
+    echo "simplestatefulfirewall: Rules saved and iptables service is enabled" | sudo tee /dev/kmsg
+
     if [ -f /usr/lib/systemd/system/opensnitchd.service ]; then
         systemctl restart opensnitchd
+	echo "simplestatefulfirewall: Restarted opensnitch for recreating his iptables rules" | sudo tee /dev/kmsg
     fi
 elif [[ $release == 'manjaro' ]]; then
     iptables-save > /etc/iptables/iptables.rules
@@ -292,8 +304,11 @@ elif [[ $release == 'manjaro' ]]; then
     systemctl start ip6tables
     systemctl restart ip6tables
 
+    echo "simplestatefulfirewall: Rules saved and iptables service is enabled" | sudo tee /dev/kmsg
+
     if [ -f /usr/lib/systemd/system/opensnitchd.service ]; then
-        systemctl restart opensnitchd
+	systemctl restart opensnitchd
+	echo "simplestatefulfirewall: Restarted opensnitch for recreating his iptables rules" | sudo tee /dev/kmsg
     fi
 elif [[ $release == 'raspbian' ]]; then
     iptables-save > /etc/iptables/rules.v4
@@ -308,8 +323,11 @@ elif [[ $release == 'raspbian' ]]; then
     systemctl start netfilter-persistent
     systemctl restart netfilter-persistent
 
+    echo "simplestatefulfirewall: Rules saved and iptables service is enabled" | sudo tee /dev/kmsg
+
     if [ -f /usr/lib/systemd/system/opensnitchd.service ]; then
         systemctl restart opensnitch
+	echo "simplestatefulfirewall: Restarted opensnitch for recreating his iptables rules" | sudo tee /dev/kmsg
     fi
 elif [[ $release == 'ubuntu' ]]; then
     iptables-save > /etc/iptables/rules.v4
@@ -324,7 +342,12 @@ elif [[ $release == 'ubuntu' ]]; then
     systemctl start netfilter-persistent
     systemctl restart netfilter-persistent
 
+    echo "simplestatefulfirewall: Rules saved and iptables service is enabled" | sudo tee /dev/kmsg
+
     if [ -f /usr/lib/systemd/system/opensnitchd.service ]; then
         systemctl restart opensnitch
+	echo "simplestatefulfirewall: Restarted opensnitch for recreating his iptables rules" | sudo tee /dev/kmsg
     fi
 fi
+
+#sudo -u DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus notify-send "Simple statefull firewall is restarted or started"
