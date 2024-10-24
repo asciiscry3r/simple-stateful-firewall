@@ -1,9 +1,9 @@
 post_install() {
 
-    sudo systemctl enable simplestatefulfirewall.timer
-    sudo systemctl start simplestatefulfirewall.timer
+	 sudo systemctl enable simplestatefulfirewall.timer
+    	 sudo systemctl start simplestatefulfirewall.timer
 
-    echo "
+	 echo "
     	 Script will automatically run after disconect or connect event in any existing
 	 Network Manager connection, at ~1m after boot,
 	 and set persistent iptables rules with new sysctl settings for system and network.
@@ -18,10 +18,10 @@ post_install() {
 
 post_upgrade() {
 
-    sudo systemctl enable simplestatefulfirewall.timer
-    sudo systemctl restart simplestatefulfirewall.timer
+	 sudo systemctl enable simplestatefulfirewall.timer
+	 sudo systemctl restart simplestatefulfirewall.timer
 
-    echo "
+	 echo "
     	 Script will automatically run after disconect or connect event in any existing
 	 Network Manager connection, at ~1m after boot,
 	 and set persistent iptables rules with new sysctl settings for system and network.
@@ -32,19 +32,18 @@ post_upgrade() {
     	 run	 - sudo systemctl start simplestatefulfirewall.service
 	 restart - sudo systemctl restart simplestatefulfirewall.service
 	 "
-
 }
 
 pre_remove() {
-    sudo systemctl disable simplestatefulfirewall.timer
+	sudo systemctl disable simplestatefulfirewall.timer
 }
 
 post_remove() {
-    if [ -f /usr/lib/systemd/system/opensnitchd.service ]; then
-        systemctl restart opensnitch
-    fi
-    if [ -f /usr/lib/systemd/system/ufw.service ]; then
-        systemctl enable ufw
-        systemctl start ufw
-    fi
+    	if [ -f /usr/lib/systemd/system/opensnitchd.service ]; then
+	   systemctl restart opensnitch
+        fi
+        if [ -f /usr/lib/systemd/system/ufw.service ]; then
+       	   systemctl enable ufw
+	   systemctl start ufw
+        fi
 }
