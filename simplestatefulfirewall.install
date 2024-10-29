@@ -10,6 +10,8 @@ post_install() {
 
               Run sudo pacman -R simple-stateful-firewall
              "
+	sudo systemctl stop simplestatefulfirewall.timer
+	sudo systemctl disable simplestatefulfirewall.timer
     else
 	sudo systemctl enable simplestatefulfirewall.timer
     	sudo systemctl start simplestatefulfirewall.timer
@@ -31,6 +33,7 @@ pre_upgrade() {
     if ps -acx | grep -q "[s]shd-session"; then
         echo "You have ssh session and this script will brick all network on remote"
 	sudo systemctl stop simplestatefulfirewall.timer
+	sudo systemctl disable simplestatefulfirewall.timer
     fi
 }
 
@@ -40,23 +43,23 @@ post_upgrade() {
 
               Run sudo pacman -R simple-stateful-firewall
              "
+	sudo systemctl stop simplestatefulfirewall.timer
+	sudo systemctl disable simplestatefulfirewall.timer
     else
 	sudo systemctl enable simplestatefulfirewall.timer
     	sudo systemctl start simplestatefulfirewall.timer
 	echo "
+             Script will automatically run after disconect or connect event in any existing
+             Network Manager connection, at ~1m after boot,
+             and set persistent iptables rules with new sysctl settings for system and network.
+             Create some problems with tools like docker, lxc, and in some vpc, developed and tested
+             ONLY for using at every day desktop/worksation with isolated development boxes.
+             Have some compability with STEAM but in some cases block 'magic' on lo.
+
 	     run     - sudo systemctl start simplestatefulfirewall.service
              restart - sudo systemctl restart simplestatefulfirewall.service
-	     "
+             "
     fi
-
-    echo "
-         Script will automatically run after disconect or connect event in any existing
-         Network Manager connection, at ~1m after boot,
-         and set persistent iptables rules with new sysctl settings for system and network.
-         Create some problems with tools like docker, lxc, and in some vpc, developed and tested
-         ONLY for using at every day desktop/worksation with isolated development boxes.
-         Have some compability with STEAM but in some cases block 'magic' on lo.
-         "
 }
 
 pre_remove() {

@@ -40,6 +40,10 @@ function install_settingstosysctl {
     done
 }
 
+if ps -acx | grep -q "[s]shd-session"; then
+    exit 1
+fi
+
 modprobe br_netfilter
 
 install_settingstosysctl
@@ -270,6 +274,7 @@ echo "simplestatefulfirewall: Applied Mangle rules" | sudo tee /dev/kmsg
 release=`grep -e '^ID=' /etc/os-release |  cut -c 4-`
 
 if [[ $release == 'arch' ]]; then
+
     iptables-save > /etc/iptables/iptables.rules
     ip6tables-save > /etc/iptables/ip6tables.rules
 
@@ -330,6 +335,7 @@ elif [[ $release == 'raspbian' ]]; then
 	echo "simplestatefulfirewall: Restarted opensnitch for recreating his iptables rules" | sudo tee /dev/kmsg
     fi
 elif [[ $release == 'ubuntu' ]]; then
+
     iptables-save > /etc/iptables/rules.v4
     ip6tables-save > /etc/iptables/rules.v4
 
