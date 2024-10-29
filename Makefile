@@ -25,6 +25,25 @@ uninstall:
 	rm -f ${DESTDIR}${confdir}systemd/system/NetworkManager-dispatcher.service.d/remain_after_exit.conf
 	rm -f ${DESTDIR}${confdir}NetworkManager/dispatcher.d/30-restart-firewall.sh
 	rm -f ${DESTDIR}${confdir}sysctl.d/00-sysctl.conf
+	iptables -F
+	iptables -t raw -F
+	iptables -t nat -F
+	iptables -t mangle -F
+
+	iptables -X
+	iptables -t raw -X
+	iptables -t nat -X
+	iptables -t mangle -X
+
+	ip6tables -F
+	ip6tables -t raw -F
+	ip6tables -t nat -F
+	ip6tables -t mangle -F
+
+	ip6tables -X
+	ip6tables -t raw -X
+	ip6tables -t nat -X
+	ip6tables -t mangle -X
 
 .PHONY: clean
 clean:
