@@ -18,7 +18,7 @@ provides=('simple-stateful-firewall')
 install="simplestatefulfirewall.install"
 
 package() {
-    echo "${pkgdir}"
+    echo "Fakeroot directory is ${pkgdir}/"
     cd "${pkgname}-${pkgver}" || exit 1
-    make DESTDIR="${pkgdir}" install
+    make DESTDIR="${pkgdir}/" install
 }

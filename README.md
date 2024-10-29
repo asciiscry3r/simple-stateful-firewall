@@ -5,7 +5,6 @@ Disable ufw or other preinstalled firewall
 ```
 sudo systemctl stop $firewallname.service
 sudo systemctl disable $firewallname.service
-
 ```
 
 Or script disable some of them for you
