@@ -1,7 +1,7 @@
 pre_install() {
     if ps -acx | grep -q "[s]shd-session"; then
-        echo "You have ssh session"
-	exit 1
+        echo "You have ssh session and this script will brick all network on remote"
+	sh -c "exit 1"
     fi
 }
 
@@ -24,8 +24,8 @@ post_install() {
 
 pre_upgrade() {
     if ps -acx | grep -q "[s]shd-session"; then
-        echo "You have ssh session"
-	exit 1
+        echo "You have ssh session and this script will brick all network on remote"
+	sh -c "exit 1"
     fi
 }
 
