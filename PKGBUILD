@@ -15,9 +15,10 @@ source=("https://github.com/asciiscry3r/simple-stateful-firewall/archive/refs/ta
 sha1sums=('SKIP')
 conflicts=('simple-stateful-firewall')
 provides=('simple-stateful-firewall')
+install="simplestatefulfirewall.install"
 
 package() {
+    echo "${pkgdir}"
     cd "${pkgname}-${pkgver}" || exit 1
     make DESTDIR="${pkgdir}" install
 }
-

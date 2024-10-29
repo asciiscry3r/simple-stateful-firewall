@@ -1,49 +1,48 @@
 post_install() {
+    sudo systemctl enable simplestatefulfirewall.timer
+    sudo systemctl start simplestatefulfirewall.timer
 
-	 sudo systemctl enable simplestatefulfirewall.timer
-    	 sudo systemctl start simplestatefulfirewall.timer
+    echo "
+         Script will automatically run after disconect or connect event in any existing
+         Network Manager connection, at ~1m after boot,
+         and set persistent iptables rules with new sysctl settings for system and network.
+         Create some problems with tools like docker, lxc, and in some vpc, developed and tested
+         ONLY for using at every day desktop/worksation with isolated development boxes.
+         Have some compability with STEAM but in some cases block 'magic' on lo.
 
-	 echo "
-    	 Script will automatically run after disconect or connect event in any existing
-	 Network Manager connection, at ~1m after boot,
-	 and set persistent iptables rules with new sysctl settings for system and network.
-	 Create some problems with tools like docker, lxc, and in some vpc, developed and tested
-	 ONLY for using at every day desktop/worksation with isolated development boxes.
-	 Have some compability with STEAM but in some cases block 'magic' on lo.
- 
-    	 run	 - sudo systemctl start simplestatefulfirewall.service
-	 restart - sudo systemctl restart simplestatefulfirewall.service
-	 "
+         run     - sudo systemctl start simplestatefulfirewall.service
+         restart - sudo systemctl restart simplestatefulfirewall.service
+         "
 }
 
 post_upgrade() {
 
-	 sudo systemctl enable simplestatefulfirewall.timer
-	 sudo systemctl restart simplestatefulfirewall.timer
+    sudo systemctl enable simplestatefulfirewall.timer
+    sudo systemctl restart simplestatefulfirewall.timer
 
-	 echo "
-    	 Script will automatically run after disconect or connect event in any existing
-	 Network Manager connection, at ~1m after boot,
-	 and set persistent iptables rules with new sysctl settings for system and network.
-	 Create some problems with tools like docker, lxc, and in some vpc, developed and tested
-	 ONLY for using at every day desktop/worksation with isolated development boxes.
-	 Have some compability with STEAM but in some cases block 'magic' on lo.
- 
-    	 run	 - sudo systemctl start simplestatefulfirewall.service
-	 restart - sudo systemctl restart simplestatefulfirewall.service
-	 "
+    echo "
+         Script will automatically run after disconect or connect event in any existing
+         Network Manager connection, at ~1m after boot,
+         and set persistent iptables rules with new sysctl settings for system and network.
+         Create some problems with tools like docker, lxc, and in some vpc, developed and tested
+         ONLY for using at every day desktop/worksation with isolated development boxes.
+         Have some compability with STEAM but in some cases block 'magic' on lo.
+
+         run     - sudo systemctl start simplestatefulfirewall.service
+         restart - sudo systemctl restart simplestatefulfirewall.service
+         "
 }
 
 pre_remove() {
-	sudo systemctl disable simplestatefulfirewall.timer
+     sudo systemctl disable simplestatefulfirewall.timer
 }
 
 post_remove() {
-    	if [ -f /usr/lib/systemd/system/opensnitchd.service ]; then
-	   systemctl restart opensnitch
-        fi
-        if [ -f /usr/lib/systemd/system/ufw.service ]; then
-       	   systemctl enable ufw
-	   systemctl start ufw
-        fi
+     if [ -f /usr/lib/systemd/system/opensnitchd.service ]; then
+        systemctl restart opensnitch
+      fi
+      if [ -f /usr/lib/systemd/system/ufw.service ]; then
+         systemctl enable ufw
+         systemctl start ufw
+      fi
 }
