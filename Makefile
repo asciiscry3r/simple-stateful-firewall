@@ -4,8 +4,6 @@ confdir = /etc/
 
 .PHONY: install
 install:
-	mkdir -p ${DESTDIR}${confdir}simplestatefulfirewall/
-	chmod 0750 -R ${DESTDIR}${confdir}simplestatefulfirewall/
 	mkdir -p ${DESTDIR}${confdir}systemd/system/NetworkManager-dispatcher.service.d/
 	chmod 0750 -R ${DESTDIR}${confdir}systemd/system/NetworkManager-dispatcher.service.d/
 	install -Dm0750 simplestatefulfirewall.install ${DESTDIR}${confdir}simplestatefulfirewall/simplestatefulfirewall.install
@@ -18,7 +16,6 @@ install:
 
 .PHONY: uninstall
 uninstall:
-	rm -f ${DESTDIR}${confdir}simplestatefulfirewall/simplestatefulfirewall.install
 	rm -f ${DESTDIR}${libdir}systemd/system/simplestatefulfirewall.service
 	rm -f ${DESTDIR}${libdir}systemd/system/simplestatefulfirewall.timer
 	rm -f ${DESTDIR}${bindir}simplestatefulfirewall.sh
