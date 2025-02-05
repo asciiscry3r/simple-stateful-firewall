@@ -19,6 +19,9 @@ function install_settingstosysctl {
     for i in "${interfaces[@]}"; do
 	sudo sysctl -w net.ipv4.conf."${i}".forwarding=0
 	sudo sysctl -w net.ipv6.conf."${i}".forwarding=0
+	sudo sysctl -w net.ipv4.conf."${i}".bc_forwarding=0
+	sudo sysctl -w net.ipv6.conf."${i}".bc_forwarding=0
+
 	sudo sysctl -w net.ipv4.conf."${i}".rp_filter=1
 	sudo sysctl -w net.ipv4.conf."${i}".accept_redirects=0
 	sudo sysctl -w net.ipv4.conf."${i}".secure_redirects=0
