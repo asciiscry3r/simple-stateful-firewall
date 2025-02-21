@@ -83,6 +83,8 @@ iptables -N LOG_AND_DROP_T
 iptables -N LOG_AND_DROP_E
 iptables -N LOG_AND_REJECT
 iptables -N bad_tcp_packets
+iptables -N UDP_LOG_AND_REJECT
+iptables -N TCP_LOG_AND_REJECT
 
 iptables -P FORWARD DROP
 iptables -P OUTPUT ACCEPT
@@ -92,6 +94,10 @@ iptables -A LOG_AND_DROP -j LOG --log-prefix "Iptables: v4Deny: " --log-level 7
 iptables -A LOG_AND_DROP -j DROP
 iptables -A LOG_AND_REJECT -j LOG --log-prefix "Iptables: v4Reject: " --log-level 7
 iptables -A LOG_AND_REJECT -j REJECT --reject-with icmp-proto-unreachable
+iptables -A UDP_LOG_AND_REJECT -j LOG --log-prefix "Iptables: UDP v4Reject: " --log-level 7
+iptables -A UDP_LOG_AND_REJECT -j REJECT --reject-with icmp-proto-unreachable
+iptables -A TCP_LOG_AND_REJECT -j LOG --log-prefix "Iptables: TCP v4Reject: " --log-level 7
+iptables -A TCP_LOG_AND_REJECT -j REJECT --reject-with tcp-reset
 iptables -A LOG_AND_DROP_T -j LOG --log-prefix "Iptables: v4Deny Torrents: " --log-level 7
 iptables -A LOG_AND_DROP_T -j DROP
 iptables -A LOG_AND_DROP_E -j LOG --log-prefix "Iptables: v4Deny Exploits: " --log-level 7
@@ -145,6 +151,9 @@ iptables -A INPUT -p udp -m recent --set --rsource --name UDP-PORTSCAN -j REJECT
 iptables -A INPUT -p tcp --syn -m conntrack --ctstate NEW -j TCP
 iptables -A INPUT -s ${BLOCKLIST} -j LOG_AND_DROP
 iptables -A INPUT -i lo -s 127.0.0.1 -j ACCEPT
+iptables -A UDP -p udp -j UDP_LOG_AND_REJECT
+iptables -A TCP -p tcp -j LOG_AND_REJECT
+
 
 iptables -t raw -A PREROUTING -m rpfilter --invert -j DROP
 iptables -t raw -A PREROUTING -m length --length 8 -j DROP
@@ -235,6 +244,8 @@ ip6tables -A INPUT -p tcp -m recent --set --rsource --name TCP-PORTSCAN -j REJEC
 ip6tables -A INPUT -p udp -m recent --set --rsource --name UDP-PORTSCAN -j REJECT --reject-with icmp6-adm-prohibited
 ip6tables -A INPUT -p tcp --syn -m conntrack --ctstate NEW -j TCP
 ip6tables -A INPUT -s ${V6BLOCKLIST} -j LOG_AND_REJECT
+ip6tables -A UDP -p udp -j LOG_AND_REJECT
+ip6tables -A TCP -p tcp -j LOG_AND_REJECT
 
 
 ip6tables -A OUTPUT -m string --algo bm --hex-string '|28 29 20 7B|' -j LOG_AND_DROP
