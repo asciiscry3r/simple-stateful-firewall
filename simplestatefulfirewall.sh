@@ -10,8 +10,8 @@ function install_settingstosysctl {
 
     if [ -f /etc/sysctl.conf ]; then
 	sysctl -p /etc/sysctl.conf
-    elif [ -f /etc/sysctl.d/00-sysctl.conf ]; then
-	sysctl -p /etc/sysctl.d/00-sysctl.conf
+    elif [ -f /etc/sysctl.d/99-sysctl.conf ]; then
+	sysctl -p /etc/sysctl.d/99-sysctl.conf
     fi
 
     interfaces=(`sudo  sysctl -a | grep accept_redirects | awk 'BEGIN{FS="."} {print $4}'`)
