@@ -17,4 +17,4 @@ sudo bash INSTALL.sh
 
 If you use Opensnitch, as web application firewall, then delete all rules in "System rules" tab.
 
-![Firewall](https://i.ibb.co/8DLD6g97/img-2025-02-24-185427.png)
+![LOG](https://i.imgur.com/q9KgJjH.png)
