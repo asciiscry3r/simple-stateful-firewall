@@ -120,7 +120,7 @@ iptables -A bad_tcp_packets -p tcp ! --syn -m state --state NEW -j DROP
 
 ####
 iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -i lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 
 iptables -A INPUT -p icmp -s 0/0 --icmp-type 8 -j ACCEPT
 iptables -A INPUT -p icmp -s 0/0 --icmp-type 11 -j ACCEPT
@@ -219,7 +219,7 @@ ip6tables -A bad_tcp_packets -p tcp ! --syn -m state --state NEW -j DROP
 
 ####
 ip6tables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-ip6tables -A INPUT -i lo -j ACCEPT
+ip6tables -A INPUT -i lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 
 ip6tables -A icmp_packets -p ipv6-icmp -s 0/0 --icmpv6-type 8 -j ACCEPT
 ip6tables -A icmp_packets -p ipv6-icmp -s 0/0 --icmpv6-type 11 -j ACCEPT
@@ -253,7 +253,7 @@ ip6tables -A INPUT -s ${V6BLOCKLIST} -j LOG_AND_REJECT
 #ip6tables -A TCP -p tcp -j LOG_AND_REJECT
 ip6tables -A INPUT -j LOG_AND_REJECT
 
-ip6tables -A OUTPUT -o lo -j LOG_AND_DROP_OUT
+ip6tables -A OUTPUT -o lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 
 ip6tables -A OUTPUT -m string --algo bm --hex-string '|28 29 20 7B|' -j LOG_AND_DROP
 ip6tables -A OUTPUT -m string --algo bm --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_DROP
