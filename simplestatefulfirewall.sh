@@ -90,6 +90,10 @@ iptables -P FORWARD DROP
 iptables -P OUTPUT DROP #ACCEPT
 iptables -P INPUT DROP
 
+#### RAW
+iptables -t raw -A PREROUTING -m rpfilter --invert -j DROP
+iptables -t raw -A PREROUTING -m length --length 8 -j DROP
+
 iptables -A LOG_AND_DROP -j LOG --log-prefix "Iptables: v4Deny: " --log-level 7
 iptables -A LOG_AND_DROP -j DROP
 iptables -A LOG_AND_REJECT -j LOG --log-prefix "Iptables: v4Reject: " --log-level 7
@@ -155,11 +159,8 @@ iptables -A INPUT -p udp -m recent --set --rsource --name UDP-PORTSCAN -j REJECT
 iptables -A INPUT -s ${BLOCKLIST} -j LOG_AND_DROP
 #iptables -A UDP -p udp -j UDP_LOG_AND_REJECT
 #iptables -A TCP -p tcp -j TCP_LOG_AND_REJECT
-
-
-iptables -t raw -A PREROUTING -m rpfilter --invert -j DROP
-iptables -t raw -A PREROUTING -m length --length 8 -j DROP
 iptables -A INPUT -j LOG_AND_REJECT
+
 
 iptables -A OUTPUT -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 iptables -A OUTPUT -o lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
@@ -197,6 +198,10 @@ ip6tables -N icmp_packets
 ip6tables -P FORWARD DROP
 ip6tables -P OUTPUT ACCEPT
 ip6tables -P INPUT DROP
+
+#### RAW
+ip6tables -t raw -A PREROUTING -m rpfilter --invert -j DROP
+ip6tables -t raw -A PREROUTING -m length --length 8 -j DROP
 
 ip6tables -A LOG_AND_DROP -j LOG --log-prefix "Iptables: v6Deny: " --log-level 7
 ip6tables -A LOG_AND_DROP -j DROP
@@ -271,9 +276,6 @@ ip6tables -A OUTPUT -s ::1/32 -p TCP -m limit --sport 53 -j LOG_AND_DROP_OUT
 ip6tables -A OUTPUT -m limit --limit 3/minute --limit-burst 3 -j LOG --log-prefix "Iptables: IPT OUTPUT packet died: "
 
 ip6tables -A OUTPUT -j LOG_AND_DROP_OUT
-
-ip6tables -t raw -A PREROUTING -m rpfilter --invert -j DROP
-ip6tables -t raw -A PREROUTING -m length --length 8 -j DROP
 
 echo "simplestatefulfirewall: Applied IPV6 rules" | sudo tee /dev/kmsg
 
