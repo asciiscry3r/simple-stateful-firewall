@@ -73,19 +73,15 @@ echo "simplestatefulfirewall: Deleted previous iptables settings" | sudo tee /de
 
 #### IpV4
 
-#iptables -N TCP
-#iptables -N UDP
 iptables -N LOG_AND_DROP
 iptables -N LOG_AND_DROP_OUT
 iptables -N LOG_AND_DROP_T
 iptables -N LOG_AND_DROP_E
 iptables -N LOG_AND_REJECT
 iptables -N bad_tcp_packets
-#iptables -N UDP_LOG_AND_REJECT
-#iptables -N TCP_LOG_AND_REJECT
 
 iptables -P FORWARD DROP
-iptables -P OUTPUT DROP #ACCEPT
+iptables -P OUTPUT DROP
 iptables -P INPUT DROP
 
 #### RAW
@@ -96,10 +92,6 @@ iptables -A LOG_AND_DROP -j LOG --log-prefix "Iptables: v4Deny: " --log-level 7
 iptables -A LOG_AND_DROP -j DROP
 iptables -A LOG_AND_REJECT -j LOG --log-prefix "Iptables: v4Reject: " --log-level 7
 iptables -A LOG_AND_REJECT -j REJECT --reject-with icmp-proto-unreachable
-#iptables -A UDP_LOG_AND_REJECT -j LOG --log-prefix "Iptables: UDP v4Reject: " --log-level 7
-#iptables -A UDP_LOG_AND_REJECT -j REJECT --reject-with icmp-proto-unreachable
-#iptables -A TCP_LOG_AND_REJECT -j LOG --log-prefix "Iptables: TCP v4Reject: " --log-level 7
-#iptables -A TCP_LOG_AND_REJECT -j REJECT --reject-with tcp-reset
 iptables -A LOG_AND_DROP_T -j LOG --log-prefix "Iptables: v4Deny Torrents: " --log-level 7
 iptables -A LOG_AND_DROP_T -j DROP
 iptables -A LOG_AND_DROP_E -j LOG --log-prefix "Iptables: v4Deny Exploits: " --log-level 7
@@ -149,14 +141,10 @@ iptables -A INPUT -p tcp --tcp-flags ALL ALL -j LOG_AND_REJECT
 iptables -A INPUT -p tcp --tcp-flags ALL NONE -j LOG_AND_REJECT
 iptables -A INPUT -p tcp -m tcp --tcp-flags RST RST -m limit --limit 2/second --limit-burst 2 -j ACCEPT
 iptables -A INPUT -m conntrack --ctstate INVALID -j LOG_AND_REJECT
-#iptables -A INPUT -p udp -m conntrack --ctstate NEW -j UDP
 iptables -A INPUT -p tcp -j bad_tcp_packets
 iptables -A INPUT -p tcp -m recent --set --rsource --name TCP-PORTSCAN -j REJECT --reject-with tcp-reset
 iptables -A INPUT -p udp -m recent --set --rsource --name UDP-PORTSCAN -j REJECT --reject-with icmp-port-unreachable
-#iptables -A INPUT -p tcp --syn -m conntrack --ctstate NEW -j TCP
 iptables -A INPUT -s ${BLOCKLIST} -j LOG_AND_DROP
-#iptables -A UDP -p udp -j UDP_LOG_AND_REJECT
-#iptables -A TCP -p tcp -j TCP_LOG_AND_REJECT
 iptables -A INPUT -j LOG_AND_REJECT
 
 
@@ -185,8 +173,6 @@ echo "simplestatefulfirewall: Applied IPV4 rules" | sudo tee /dev/kmsg
 
 #### IpV6
 
-#ip6tables -N TCP
-#ip6tables -N UDP
 ip6tables -N LOG_AND_DROP
 ip6tables -N LOG_AND_DROP_OUT
 ip6tables -N LOG_AND_REJECT
@@ -246,14 +232,10 @@ ip6tables -A INPUT -p tcp --tcp-flags ALL ALL -j LOG_AND_REJECT
 ip6tables -A INPUT -p tcp --tcp-flags ALL NONE -j LOG_AND_REJECT
 ip6tables -A INPUT -p tcp -m tcp --tcp-flags RST RST -m limit --limit 2/second --limit-burst 2 -j ACCEPT
 ip6tables -A INPUT -m conntrack --ctstate INVALID -j LOG_AND_REJECT
-#ip6tables -A INPUT -p udp -m conntrack --ctstate NEW -j UDP
 ip6tables -A INPUT -p tcp -j bad_tcp_packets
 ip6tables -A INPUT -p tcp -m recent --set --rsource --name TCP-PORTSCAN -j REJECT --reject-with tcp-reset
 ip6tables -A INPUT -p udp -m recent --set --rsource --name UDP-PORTSCAN -j REJECT --reject-with icmp6-adm-prohibited
-#ip6tables -A INPUT -p tcp --syn -m conntrack --ctstate NEW -j TCP
 ip6tables -A INPUT -s ${V6BLOCKLIST} -j LOG_AND_REJECT
-#ip6tables -A UDP -p udp -j LOG_AND_REJECT
-#ip6tables -A TCP -p tcp -j LOG_AND_REJECT
 ip6tables -A INPUT -j LOG_AND_REJECT
 
 ip6tables -A OUTPUT -o lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
@@ -374,5 +356,3 @@ elif [[ $release == 'ubuntu' ]]; then
 	echo "simplestatefulfirewall: Restarted opensnitch for recreating his iptables rules" | sudo tee /dev/kmsg
     fi
 fi
-
-#sudo -u DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus notify-send "Simple statefull firewall is restarted or started"
