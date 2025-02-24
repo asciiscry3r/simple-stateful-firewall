@@ -87,7 +87,7 @@ iptables -N bad_tcp_packets
 #iptables -N TCP_LOG_AND_REJECT
 
 iptables -P FORWARD DROP
-iptables -P OUTPUT ACCEPT
+iptables -P OUTPUT DROP #ACCEPT
 iptables -P INPUT DROP
 
 iptables -A LOG_AND_DROP -j LOG --log-prefix "Iptables: v4Deny: " --log-level 7
