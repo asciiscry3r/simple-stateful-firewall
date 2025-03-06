@@ -177,7 +177,6 @@ ip6tables -N LOG_AND_DROP
 ip6tables -N LOG_AND_DROP_OUT
 ip6tables -N LOG_AND_REJECT
 ip6tables -N bad_tcp_packets
-ip6tables -N icmp_packets
 
 ip6tables -P FORWARD DROP
 ip6tables -P OUTPUT ACCEPT
@@ -210,9 +209,9 @@ ip6tables -A bad_tcp_packets -p tcp ! --syn -m state --state NEW -j DROP
 ip6tables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 ip6tables -A INPUT -i lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 
-ip6tables -A icmp_packets -p ipv6-icmp -s 0/0 --icmpv6-type 8 -j ACCEPT
-ip6tables -A icmp_packets -p ipv6-icmp -s 0/0 --icmpv6-type 11 -j ACCEPT
-ip6tables -A icmp_packets -p ipv6-icmp --icmpv6-type echo-request -m length --length 86:0xffff -j DROP
+ip6tables -A INPUT -p ipv6-icmp -s 0/0 --icmpv6-type 8 -j ACCEPT
+ip6tables -A INPUT -p ipv6-icmp -s 0/0 --icmpv6-type 11 -j ACCEPT
+ip6tables -A INPUT -p ipv6-icmp --icmpv6-type echo-request -m length --length 86:0xffff -j DROP
 ip6tables -A INPUT -p icmp -j DROP
 ip6tables -A INPUT -m string --algo bm --hex-string '|28 29 20 7B|' -j LOG_AND_REJECT
 ip6tables -A INPUT -m string --algo bm --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_REJECT
@@ -263,11 +262,9 @@ echo "simplestatefulfirewall: Applied IPV6 rules" | sudo tee /dev/kmsg
 
 iptables -t mangle -A PREROUTING -m rpfilter --invert -j DROP
 iptables -t mangle -A PREROUTING -m length --length 8 -j DROP
-iptables -t mangle -A PREROUTING -j ACCEPT
 
 ip6tables -t mangle -A PREROUTING -m rpfilter --invert -j DROP
 ip6tables -t mangle -A PREROUTING -m length --length 8 -j DROP
-ip6tables -t mangle -A PREROUTING -j ACCEPT
 
 echo "simplestatefulfirewall: Applied Mangle rules" | sudo tee /dev/kmsg
 
