@@ -1,7 +1,16 @@
 [Unit]
 Description=Simple Stateful firewall
+
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/simplestatefulfirewall.sh
+PrivateNetwork=yes
+PrivateTmp=yes
+InaccessibleDirectories=/home
+ReadOnlyDirectories=/var
+LimitNPROC=1
+LimitFSIZE=0
+CapabilityBoundingSet=CAP_CHOWN CAP_KILL
+
 [Install]
 WantedBy=multi-user.target

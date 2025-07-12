@@ -12,32 +12,32 @@ function install_settingstosysctl {
 	sysctl -p /etc/sysctl.d/99-sysctl.conf
     fi
 
-    interfaces=(`sudo  sysctl -a | grep accept_redirects | awk 'BEGIN{FS="."} {print $4}'`)
+    interfaces=(`sysctl -a | grep accept_redirects | awk 'BEGIN{FS="."} {print $4}'`)
 
     for i in "${interfaces[@]}"; do
-	sudo sysctl -w net.ipv4.conf."${i}".forwarding=0
-	sudo sysctl -w net.ipv6.conf."${i}".forwarding=0
-	sudo sysctl -w net.ipv4.conf."${i}".bc_forwarding=0
-	sudo sysctl -w net.ipv6.conf."${i}".bc_forwarding=0
+	sysctl -w net.ipv4.conf."${i}".forwarding=0
+	sysctl -w net.ipv6.conf."${i}".forwarding=0
+	sysctl -w net.ipv4.conf."${i}".bc_forwarding=0
+	sysctl -w net.ipv6.conf."${i}".bc_forwarding=0
 
-	sudo sysctl -w net.ipv4.conf."${i}".rp_filter=1
-	sudo sysctl -w net.ipv4.conf."${i}".accept_redirects=0
-	sudo sysctl -w net.ipv4.conf."${i}".secure_redirects=0
-	sudo sysctl -w net.ipv4.conf."${i}".send_redirects=0
-	sudo sysctl -w net.ipv4.conf."${i}".accept_source_route=0
-	sudo sysctl -w net.ipv6.conf."${i}".accept_redirects=0
-	sudo sysctl -w net.ipv6.conf."${i}".accept_source_route=0
-	sudo sysctl -w net.ipv4.conf."${i}".bootp_relay=0
-	sudo sysctl -w net.ipv4.conf."${i}".proxy_arp=0
-	sudo sysctl -w net.ipv4.conf."${i}".arp_ignore=1
-        sudo sysctl -w net.ipv4.conf."${i}".arp_announce=2
-	sudo sysctl -w net.ipv4.conf."${i}".log_martians=1
-	sudo sysctl -w net.ipv6.conf."${i}".autoconf=0
-        sudo sysctl -w net.ipv6.conf."${i}".accept_ra=0
-	sudo sysctl -w net.ipv6.conf."${i}".use_tempaddr=2
-	sudo sysctl -w net.ipv6.conf."${i}".rpl_seg_enabled=0
-	sudo sysctl -w net.ipv6.conf."${i}".disable_ipv6=1
-	echo "simplestatefulfirewall: Applied sysctl settings for interface" | sudo tee /dev/kmsg
+	sysctl -w net.ipv4.conf."${i}".rp_filter=1
+	sysctl -w net.ipv4.conf."${i}".accept_redirects=0
+	sysctl -w net.ipv4.conf."${i}".secure_redirects=0
+	sysctl -w net.ipv4.conf."${i}".send_redirects=0
+	sysctl -w net.ipv4.conf."${i}".accept_source_route=0
+	sysctl -w net.ipv6.conf."${i}".accept_redirects=0
+	sysctl -w net.ipv6.conf."${i}".accept_source_route=0
+	sysctl -w net.ipv4.conf."${i}".bootp_relay=0
+	sysctl -w net.ipv4.conf."${i}".proxy_arp=0
+	sysctl -w net.ipv4.conf."${i}".arp_ignore=1
+        sysctl -w net.ipv4.conf."${i}".arp_announce=2
+	sysctl -w net.ipv4.conf."${i}".log_martians=1
+	sysctl -w net.ipv6.conf."${i}".autoconf=0
+        sysctl -w net.ipv6.conf."${i}".accept_ra=0
+	sysctl -w net.ipv6.conf."${i}".use_tempaddr=2
+	sysctl -w net.ipv6.conf."${i}".rpl_seg_enabled=0
+	sysctl -w net.ipv6.conf."${i}".disable_ipv6=1
+	echo "simplestatefulfirewall: Applied sysctl settings for interface" | tee /dev/kmsg
     done
 }
 
@@ -69,7 +69,7 @@ ip6tables -t raw -X
 ip6tables -t nat -X
 ip6tables -t mangle -X
 
-echo "simplestatefulfirewall: Deleted previous iptables settings" | sudo tee /dev/kmsg
+echo "simplestatefulfirewall: Deleted previous iptables settings" | tee /dev/kmsg
 
 #### IpV4
 
@@ -169,7 +169,7 @@ iptables -A OUTPUT -m limit --limit 3/minute --limit-burst 3 -j LOG --log-prefix
 iptables -A OUTPUT -o lo -j LOG_AND_DROP_OUT
 iptables -A OUTPUT -j LOG_AND_DROP_OUT
 
-echo "simplestatefulfirewall: Applied IPV4 rules" | sudo tee /dev/kmsg
+echo "simplestatefulfirewall: Applied IPV4 rules" | tee /dev/kmsg
 
 #### IpV6
 
@@ -256,7 +256,7 @@ ip6tables -A OUTPUT -m limit --limit 3/minute --limit-burst 3 -j LOG --log-prefi
 
 ip6tables -A OUTPUT -j LOG_AND_DROP_OUT
 
-echo "simplestatefulfirewall: Applied IPV6 rules" | sudo tee /dev/kmsg
+echo "simplestatefulfirewall: Applied IPV6 rules" | tee /dev/kmsg
 
 #### Mangle
 
@@ -266,7 +266,7 @@ iptables -t mangle -A PREROUTING -m length --length 8 -j DROP
 ip6tables -t mangle -A PREROUTING -m rpfilter --invert -j DROP
 ip6tables -t mangle -A PREROUTING -m length --length 8 -j DROP
 
-echo "simplestatefulfirewall: Applied Mangle rules" | sudo tee /dev/kmsg
+echo "simplestatefulfirewall: Applied Mangle rules" | tee /dev/kmsg
 
 
 release=`grep -e '^ID=' /etc/os-release |  cut -c 4-`
@@ -284,11 +284,11 @@ if [[ $release == 'arch' ]]; then
     systemctl start ip6tables
     systemctl restart ip6tables
 
-    echo "simplestatefulfirewall: Rules saved and iptables service is enabled" | sudo tee /dev/kmsg
+    echo "simplestatefulfirewall: Rules saved and iptables service is enabled" | tee /dev/kmsg
 
     if [ -f /usr/lib/systemd/system/opensnitchd.service ]; then
         systemctl restart opensnitchd
-	echo "simplestatefulfirewall: Restarted opensnitch for recreating his iptables rules" | sudo tee /dev/kmsg
+	echo "simplestatefulfirewall: Restarted opensnitch for recreating his iptables rules" | tee /dev/kmsg
     fi
 elif [[ $release == 'manjaro' ]]; then
     iptables-save > /etc/iptables/iptables.rules
@@ -307,11 +307,11 @@ elif [[ $release == 'manjaro' ]]; then
     systemctl start ip6tables
     systemctl restart ip6tables
 
-    echo "simplestatefulfirewall: Rules saved and iptables service is enabled" | sudo tee /dev/kmsg
+    echo "simplestatefulfirewall: Rules saved and iptables service is enabled" | tee /dev/kmsg
 
     if [ -f /usr/lib/systemd/system/opensnitchd.service ]; then
 	systemctl restart opensnitchd
-	echo "simplestatefulfirewall: Restarted opensnitch for recreating his iptables rules" | sudo tee /dev/kmsg
+	echo "simplestatefulfirewall: Restarted opensnitch for recreating his iptables rules" | tee /dev/kmsg
     fi
 elif [[ $release == 'raspbian' ]]; then
     iptables-save > /etc/iptables/rules.v4
@@ -326,11 +326,11 @@ elif [[ $release == 'raspbian' ]]; then
     systemctl start netfilter-persistent
     systemctl restart netfilter-persistent
 
-    echo "simplestatefulfirewall: Rules saved and iptables service is enabled" | sudo tee /dev/kmsg
+    echo "simplestatefulfirewall: Rules saved and iptables service is enabled" | tee /dev/kmsg
 
     if [ -f /usr/lib/systemd/system/opensnitchd.service ]; then
         systemctl restart opensnitch
-	echo "simplestatefulfirewall: Restarted opensnitch for recreating his iptables rules" | sudo tee /dev/kmsg
+	echo "simplestatefulfirewall: Restarted opensnitch for recreating his iptables rules" | tee /dev/kmsg
     fi
 elif [[ $release == 'ubuntu' ]]; then
 
@@ -346,10 +346,10 @@ elif [[ $release == 'ubuntu' ]]; then
     systemctl start netfilter-persistent
     systemctl restart netfilter-persistent
 
-    echo "simplestatefulfirewall: Rules saved and iptables service is enabled" | sudo tee /dev/kmsg
+    echo "simplestatefulfirewall: Rules saved and iptables service is enabled" | tee /dev/kmsg
 
     if [ -f /usr/lib/systemd/system/opensnitchd.service ]; then
         systemctl restart opensnitch
-	echo "simplestatefulfirewall: Restarted opensnitch for recreating his iptables rules" | sudo tee /dev/kmsg
+	echo "simplestatefulfirewall: Restarted opensnitch for recreating his iptables rules" | tee /dev/kmsg
     fi
 fi
