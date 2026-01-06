@@ -5,6 +5,7 @@
 # https://github.com/ukanth/afwall/wiki/CustomScripts#droidwall-only-examples
 # https://wiki.archlinux.org/title/simple_stateful_firewall
 # https://ipgeolocation.io/resources/bogon.html
+# https://forums.freebsd.org/threads/port-0.81674/
 
 function install_settingstosysctl {
 
@@ -121,6 +122,11 @@ iptables -A INPUT -p icmp -s 0/0 --icmp-type 11 -j ACCEPT
 iptables -A INPUT -p icmp --icmp-type echo-request -m length --length 86:0xffff -j DROP
 iptables -A INPUT -p icmp -j DROP
 
+iptables -A INPUT -p UDP --sport 0 -j LOG_AND_DROP
+iptables -A INPUT -p TCP --sport 0 -j LOG_AND_DROP
+iptables -A INPUT -p UDP --dport 0 -j LOG_AND_DROP
+iptables -A INPUT -p TCP --dport 0 -j LOG_AND_DROP
+
 iptables -A INPUT ! -i lo -m string --algo bm --hex-string '|28 29 20 7B|' -j LOG_AND_DROP_E
 iptables -A INPUT ! -i lo -m string --algo bm --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_DROP_E
 iptables -A INPUT ! -i lo -m string --algo bm --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_DROP_E
@@ -167,6 +173,11 @@ iptables -A OUTPUT -m string --algo bm --string “BitTorrent” -j LOG_AND_DROP
 iptables -A OUTPUT -m limit --limit 3/minute --limit-burst 3 -j LOG --log-prefix "Iptables: IPT OUTPUT packet died: "
 
 iptables -A OUTPUT -o lo -j LOG_AND_DROP_OUT
+iptables -A OUTPUT -p UDP --sport 0 -j LOG_AND_DROP_OUT
+iptables -A OUTPUT -p TCP --sport 0 -j LOG_AND_DROP_OUT
+iptables -A OUTPUT -p UDP --dport 0 -j LOG_AND_DROP_OUT
+iptables -A OUTPUT -p TCP --dport 0 -j LOG_AND_DROP_OUT
+
 iptables -A OUTPUT -j LOG_AND_DROP_OUT
 
 echo "simplestatefulfirewall: Applied IPV4 rules" | tee /dev/kmsg
@@ -209,6 +220,11 @@ ip6tables -A bad_tcp_packets -p tcp ! --syn -m state --state NEW -j DROP
 ip6tables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 ip6tables -A INPUT -i lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 
+iptables -A INPUT -p UDP --sport 0 -j LOG_AND_DROP
+iptables -A INPUT -p TCP --sport 0 -j LOG_AND_DROP
+iptables -A INPUT -p UDP --dport 0 -j LOG_AND_DROP
+iptables -A INPUT -p TCP --dport 0 -j LOG_AND_DROP
+
 ip6tables -A INPUT -p ipv6-icmp -s 0/0 --icmpv6-type 8 -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp -s 0/0 --icmpv6-type 11 -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp --icmpv6-type echo-request -m length --length 86:0xffff -j DROP
@@ -238,6 +254,10 @@ ip6tables -A INPUT -s ${V6BLOCKLIST} -j LOG_AND_REJECT
 ip6tables -A INPUT -j LOG_AND_REJECT
 
 ip6tables -A OUTPUT -o lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
+ip6tables -A OUTPUT -p UDP --sport 0 -j LOG_AND_DROP_OUT
+ip6tables -A OUTPUT -p TCP --sport 0 -j LOG_AND_DROP_OUT
+ip6tables -A OUTPUT -p UDP --dport 0 -j LOG_AND_DROP_OUT
+ip6tables -A OUTPUT -p TCP --dport 0 -j LOG_AND_DROP_OUT
 
 ip6tables -A OUTPUT -m string --algo bm --hex-string '|28 29 20 7B|' -j LOG_AND_DROP
 ip6tables -A OUTPUT -m string --algo bm --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_DROP

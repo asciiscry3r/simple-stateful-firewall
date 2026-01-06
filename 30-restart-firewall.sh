@@ -8,14 +8,14 @@ ACTION="$2"
 case $ACTION in
     up)
 	if ps -acx | grep -q "[s]shd"; then
-            echo "simplestatefulfirewall: dispatcher script will brick network please remove simple-stateful-firewall-git" | sudo tee /dev/kmsg
+            echo "simplestatefulfirewall: dispatcher script will brick network please remove simple-stateful-firewall-git" | tee /dev/kmsg
 	else
 	    systemctl restart simplestatefulfirewall.service
 	fi
 	;;
     down)
 	if ps -acx | grep -q "[s]shd"; then
-            echo "simplestatefulfirewall: dispatcher script will brick network please remove simple-stateful-firewall-git" | sudo tee /dev/kmsg
+            echo "simplestatefulfirewall: dispatcher script will brick network please remove simple-stateful-firewall-git" | tee /dev/kmsg
 	else
 	    systemctl restart simplestatefulfirewall.service
 	fi
