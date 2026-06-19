@@ -32,7 +32,7 @@ function install_settingstosysctl {
 		sysctl -w net.ipv4.conf."${i}".arp_ignore=1
 		sysctl -w net.ipv4.conf."${i}".arp_announce=2
 		sysctl -w net.ipv4.conf."${i}".log_martians=1
-		sysctl -w net.ipv6.conf."${i}".autoconf=1
+		sysctl -w net.ipv6.conf."${i}".autoconf=0
 		sysctl -w net.ipv6.conf."${i}".accept_ra=1
 		sysctl -w net.ipv6.conf."${i}".use_tempaddr=2
 		sysctl -w net.ipv6.conf."${i}".rpl_seg_enabled=0
