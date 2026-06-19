@@ -20,7 +20,6 @@ function install_settingstosysctl {
 	sysctl -w net.ipv6.conf."${i}".forwarding=0
 	sysctl -w net.ipv4.conf."${i}".bc_forwarding=0
 	sysctl -w net.ipv6.conf."${i}".bc_forwarding=0
-
 	sysctl -w net.ipv4.conf."${i}".rp_filter=1
 	sysctl -w net.ipv4.conf."${i}".accept_redirects=0
 	sysctl -w net.ipv4.conf."${i}".secure_redirects=0
@@ -37,7 +36,7 @@ function install_settingstosysctl {
         sysctl -w net.ipv6.conf."${i}".accept_ra=0
 	sysctl -w net.ipv6.conf."${i}".use_tempaddr=2
 	sysctl -w net.ipv6.conf."${i}".rpl_seg_enabled=0
-	sysctl -w net.ipv6.conf."${i}".disable_ipv6=1
+	# sysctl -w net.ipv6.conf."${i}".disable_ipv6=1
 	echo "simplestatefulfirewall: Applied sysctl settings for interface" | tee /dev/kmsg
     done
 }
@@ -142,6 +141,8 @@ iptables -A INPUT -p tcp \
   -m string --algo kmp --string "RFB 003." --to 130 \
   -j REJECT --reject-with tcp-reset
 
+iptables -A INPUT -p dccp -j LOG_AND_REJECT
+iptables -A INPUT -p sctp -j LOG_AND_REJECT
 iptables -A INPUT -f -j LOG_AND_REJECT
 iptables -A INPUT -p tcp --tcp-flags ALL ALL -j LOG_AND_REJECT
 iptables -A INPUT -p tcp --tcp-flags ALL NONE -j LOG_AND_REJECT
@@ -220,10 +221,10 @@ ip6tables -A bad_tcp_packets -p tcp ! --syn -m state --state NEW -j DROP
 ip6tables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 ip6tables -A INPUT -i lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 
-iptables -A INPUT -p UDP --sport 0 -j LOG_AND_DROP
-iptables -A INPUT -p TCP --sport 0 -j LOG_AND_DROP
-iptables -A INPUT -p UDP --dport 0 -j LOG_AND_DROP
-iptables -A INPUT -p TCP --dport 0 -j LOG_AND_DROP
+ip6tables -A INPUT -p UDP --sport 0 -j LOG_AND_DROP
+ip6tables -A INPUT -p TCP --sport 0 -j LOG_AND_DROP
+ip6tables -A INPUT -p UDP --dport 0 -j LOG_AND_DROP
+ip6tables -A INPUT -p TCP --dport 0 -j LOG_AND_DROP
 
 ip6tables -A INPUT -p ipv6-icmp -s 0/0 --icmpv6-type 8 -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp -s 0/0 --icmpv6-type 11 -j ACCEPT
@@ -242,6 +243,9 @@ ip6tables -A INPUT -p tcp \
   -m u32 --u32 "0>>22&0x3C@ 12>>26&0x3C@ 0=0x52464220" \
   -m string --algo kmp --string "RFB 003." --to 130 \
   -j REJECT --reject-with tcp-reset
+
+ip6tables -A INPUT -p dccp -j LOG_AND_REJECT
+ip6tables -A INPUT -p sctp -j LOG_AND_REJECT
 ip6tables -A INPUT -m ipv6header --header frag --soft -j LOG_AND_REJECT
 ip6tables -A INPUT -p tcp --tcp-flags ALL ALL -j LOG_AND_REJECT
 ip6tables -A INPUT -p tcp --tcp-flags ALL NONE -j LOG_AND_REJECT
