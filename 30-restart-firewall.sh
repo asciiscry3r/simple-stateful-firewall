@@ -6,18 +6,18 @@ INTERFACE="$1"
 ACTION="$2"
 
 case $ACTION in
-    up)
+up)
 	if ps -acx | grep -q "[s]shd"; then
-            echo "simplestatefulfirewall: dispatcher script will brick network please remove simple-stateful-firewall-git" | tee /dev/kmsg
+		echo "simplestatefulfirewall: dispatcher script will brick network please remove simple-stateful-firewall-git" | tee /dev/kmsg
 	else
-	    systemctl restart simplestatefulfirewall.service
+		systemctl restart simplestatefulfirewall.service
 	fi
 	;;
-    down)
+down)
 	if ps -acx | grep -q "[s]shd"; then
-            echo "simplestatefulfirewall: dispatcher script will brick network please remove simple-stateful-firewall-git" | tee /dev/kmsg
+		echo "simplestatefulfirewall: dispatcher script will brick network please remove simple-stateful-firewall-git" | tee /dev/kmsg
 	else
-	    systemctl restart simplestatefulfirewall.service
+		systemctl restart simplestatefulfirewall.service
 	fi
 	;;
 esac

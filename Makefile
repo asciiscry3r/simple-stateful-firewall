@@ -21,7 +21,7 @@ uninstall:
 	rm -f ${DESTDIR}${bindir}simplestatefulfirewall.sh
 	rm -f ${DESTDIR}${confdir}systemd/system/NetworkManager-dispatcher.service.d/remain_after_exit.conf
 	rm -f ${DESTDIR}${confdir}NetworkManager/dispatcher.d/30-restart-firewall.sh
-	rm -f ${DESTDIR}${confdir}sysctl.d/00-sysctl.conf
+	rm -f ${DESTDIR}${confdir}sysctl.d/99-sysctl.conf
 	iptables -F
 	iptables -t raw -F
 	iptables -t nat -F
