@@ -236,7 +236,7 @@ ip6tables -A INPUT -p ipv6-icmp -s 0/0 --icmpv6-type 11 -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp --icmpv6-type echo-request -m length --length 86:0xffff -j DROP
 ip6tables -A INPUT -p ipv6-icmp --icmpv6-type parameter-problem -j DROP
 ip6tables -A INPUT -p ipv6-icmp -m string --algo kmp --hex-string '|08 00 45 00|' -j LOG_AND_REJECT
-ip6tables -A INPUT -p ipv6-icmp -m ipv6header --header none -j DROP
+ip6tables -A INPUT -p ipv6-icmp -m ipv6header ! --header none -j DROP
 ip6tables -A INPUT -p ipv6-icmp -j DROP
 
 ip6tables -A INPUT -m string --algo kmp --hex-string '|28 29 20 7B|' -j LOG_AND_REJECT
@@ -256,7 +256,9 @@ ip6tables -A INPUT -p tcp \
 ip6tables -A INPUT -p dccp -j LOG_AND_REJECT
 ip6tables -A INPUT -p sctp -j LOG_AND_REJECT
 ip6tables -A INPUT -m ipv6header --header frag --soft -j LOG_AND_REJECT
-ip6tables -A INPUT -m ipv6header --header none --soft -j LOG_AND_REJECT
+ip6tables -A INPUT -m ipv6header ! --header none --soft -j LOG_AND_REJECT
+ip6tables -A INPUT -m hbh -j LOG_AND_DROP
+ip6tables -A INPUT -m rt --rt-type 0 -j LOG_AND_DROP
 ip6tables -A INPUT -p tcp --tcp-flags ALL ALL -j LOG_AND_REJECT
 ip6tables -A INPUT -p tcp --tcp-flags ALL NONE -j LOG_AND_REJECT
 ip6tables -A INPUT -p tcp -m tcp --tcp-flags RST RST -m limit --limit 2/second --limit-burst 2 -j ACCEPT
