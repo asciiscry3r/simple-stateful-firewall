@@ -46,6 +46,8 @@ if ps -acx | grep -q "[s]shd-session"; then
 fi
 
 modprobe br_netfilter
+modprobe nf_conntrack
+modprobe xt_LOG
 
 install_settingstosysctl
 
@@ -119,6 +121,7 @@ iptables -A INPUT -i lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 iptables -A INPUT -p icmp -s 0/0 --icmp-type 8 -j ACCEPT
 iptables -A INPUT -p icmp -s 0/0 --icmp-type 11 -j ACCEPT
 iptables -A INPUT -p icmp --icmp-type echo-request -m length --length 86:0xffff -j DROP
+iptables -A INPUT -p icmp -m string --algo kmp --hex-string '|08 00 45 00|' -j LOG_AND_DROP
 iptables -A INPUT -p icmp -j DROP
 
 iptables -A INPUT -p UDP --sport 0 -j LOG_AND_DROP
@@ -126,12 +129,15 @@ iptables -A INPUT -p TCP --sport 0 -j LOG_AND_DROP
 iptables -A INPUT -p UDP --dport 0 -j LOG_AND_DROP
 iptables -A INPUT -p TCP --dport 0 -j LOG_AND_DROP
 
-iptables -A INPUT ! -i lo -m string --algo bm --hex-string '|28 29 20 7B|' -j LOG_AND_DROP_E
-iptables -A INPUT ! -i lo -m string --algo bm --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_DROP_E
-iptables -A INPUT ! -i lo -m string --algo bm --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_DROP_E
-iptables -A INPUT ! -i lo -m string --algo bm --hex-string '|72 70 63 6E 65 74 70 2E 65 78 65 00 72 70 63 6E 65 74 70 00|' -j LOG_AND_DROP_E
+# The hex string pattern can be used for non-printable characters, like |0D 0A| or |0D0A|.
+# iptables -A INPUT -p udp --dport 53 -m string --algo kmp --from 40 --to 57 --hex-string '|03|www|09|netfilter|03|org|00|' -j LOG_AND_DROP
 
-iptables -A INPUT -m string --algo bm --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_DROP_E
+iptables -A INPUT ! -i lo -m string --algo kmp --hex-string '|28 29 20 7B|' -j LOG_AND_DROP_E
+iptables -A INPUT ! -i lo -m string --algo kmp --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_DROP_E
+iptables -A INPUT ! -i lo -m string --algo kmp --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_DROP_E
+iptables -A INPUT ! -i lo -m string --algo kmp --hex-string '|72 70 63 6E 65 74 70 2E 65 78 65 00 72 70 63 6E 65 74 70 00|' -j LOG_AND_DROP_E
+
+iptables -A INPUT -m string --algo kmp --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_DROP_E
 iptables -A INPUT -m u32 --u32 "8&0xFFF=0x4d5a" -j LOG_AND_DROP_E
 iptables -A INPUT -p tcp \
 	-m connbytes --connbytes 0:1024 \
@@ -147,7 +153,7 @@ iptables -A INPUT -f -j LOG_AND_REJECT
 iptables -A INPUT -p tcp --tcp-flags ALL ALL -j LOG_AND_REJECT
 iptables -A INPUT -p tcp --tcp-flags ALL NONE -j LOG_AND_REJECT
 iptables -A INPUT -p tcp -m tcp --tcp-flags RST RST -m limit --limit 2/second --limit-burst 2 -j ACCEPT
-iptables -A INPUT -m conntrack --ctstate INVALID -j LOG_AND_REJECT
+iptables -A INPUT -m conntrack --ctstate INVALID -j LOG_AND_DROP
 iptables -A INPUT -p tcp -j bad_tcp_packets
 iptables -A INPUT -p tcp -m recent --set --rsource --name TCP-PORTSCAN -j REJECT --reject-with tcp-reset
 iptables -A INPUT -p udp -m recent --set --rsource --name UDP-PORTSCAN -j REJECT --reject-with icmp-port-unreachable
@@ -157,11 +163,11 @@ iptables -A INPUT -j LOG_AND_REJECT
 iptables -A OUTPUT -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 iptables -A OUTPUT -o lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 
-iptables -A OUTPUT ! -o lo -m string --algo bm --hex-string '|28 29 20 7B|' -j LOG_AND_DROP_E
-iptables -A OUTPUT ! -o lo -m string --algo bm --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_DROP_E
-iptables -A OUTPUT ! -o lo -m string --algo bm --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_DROP_E
-iptables -A OUTPUT ! -o lo -m string --algo bm --hex-string '|72 70 63 6E 65 74 70 2E 65 78 65 00 72 70 63 6E 65 74 70 00|' -j LOG_AND_DROP_E
-iptables -A OUTPUT -m string --algo bm --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_DROP_E
+iptables -A OUTPUT ! -o lo -m string --algo kmp --hex-string '|28 29 20 7B|' -j LOG_AND_DROP_E
+iptables -A OUTPUT ! -o lo -m string --algo kmp --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_DROP_E
+iptables -A OUTPUT ! -o lo -m string --algo kmp --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_DROP_E
+iptables -A OUTPUT ! -o lo -m string --algo kmp --hex-string '|72 70 63 6E 65 74 70 2E 65 78 65 00 72 70 63 6E 65 74 70 00|' -j LOG_AND_DROP_E
+iptables -A OUTPUT -m string --algo kmp --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_DROP_E
 
 iptables -A OUTPUT -m u32 --u32 "8&0xFFF=0x4d5a" -j LOG_AND_DROP_E
 iptables -A OUTPUT -p dccp -j LOG_AND_DROP_OUT
@@ -169,7 +175,7 @@ iptables -A OUTPUT -p sctp -j LOG_AND_DROP_OUT
 iptables -A OUTPUT -f -j LOG_AND_DROP_OUT
 iptables -A OUTPUT -p tcp -j bad_tcp_packets
 iptables -A OUTPUT -s ${BLOCKLIST} -j LOG_AND_DROP_OUT
-iptables -A OUTPUT -m string --algo bm --string “BitTorrent” -j LOG_AND_DROP_T
+iptables -A OUTPUT -m string --algo kmp --string “BitTorrent” -j LOG_AND_DROP_T
 iptables -A OUTPUT -m limit --limit 3/minute --limit-burst 3 -j LOG --log-prefix "Iptables: IPT OUTPUT packet died: "
 
 iptables -A OUTPUT -o lo -j LOG_AND_DROP_OUT
@@ -228,12 +234,16 @@ ip6tables -A INPUT -p TCP --dport 0 -j LOG_AND_DROP
 ip6tables -A INPUT -p ipv6-icmp -s 0/0 --icmpv6-type 8 -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp -s 0/0 --icmpv6-type 11 -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp --icmpv6-type echo-request -m length --length 86:0xffff -j DROP
-ip6tables -A INPUT -p icmp -j DROP
-ip6tables -A INPUT -m string --algo bm --hex-string '|28 29 20 7B|' -j LOG_AND_REJECT
-ip6tables -A INPUT -m string --algo bm --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_REJECT
-ip6tables -A INPUT -m string --algo bm --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_REJECT
-ip6tables -A INPUT -m string --algo bm --hex-string '|72 70 63 6E 65 74 70 2E 65 78 65 00 72 70 63 6E 65 74 70 00|' -j LOG_AND_REJECT
-ip6tables -A INPUT -m string --algo bm --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_REJECT
+ip6tables -A INPUT -p ipv6-icmp --icmpv6-type parameter-problem -j DROP
+ip6tables -A INPUT -p ipv6-icmp -m string --algo kmp --hex-string '|08 00 45 00|' -j LOG_AND_REJECT
+ip6tables -A INPUT -p ipv6-icmp -m ipv6header --header none -j DROP
+ip6tables -A INPUT -p ipv6-icmp -j DROP
+
+ip6tables -A INPUT -m string --algo kmp --hex-string '|28 29 20 7B|' -j LOG_AND_REJECT
+ip6tables -A INPUT -m string --algo kmp --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_REJECT
+ip6tables -A INPUT -m string --algo kmp --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_REJECT
+ip6tables -A INPUT -m string --algo kmp --hex-string '|72 70 63 6E 65 74 70 2E 65 78 65 00 72 70 63 6E 65 74 70 00|' -j LOG_AND_REJECT
+ip6tables -A INPUT -m string --algo kmp --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_REJECT
 ip6tables -A INPUT -m u32 --u32 "8&0xFFF=0x4d5a" -j LOG_AND_DROP
 ip6tables -A INPUT -p tcp \
 	-m connbytes --connbytes 0:1024 \
@@ -246,10 +256,11 @@ ip6tables -A INPUT -p tcp \
 ip6tables -A INPUT -p dccp -j LOG_AND_REJECT
 ip6tables -A INPUT -p sctp -j LOG_AND_REJECT
 ip6tables -A INPUT -m ipv6header --header frag --soft -j LOG_AND_REJECT
+ip6tables -A INPUT -m ipv6header --header none --soft -j LOG_AND_REJECT
 ip6tables -A INPUT -p tcp --tcp-flags ALL ALL -j LOG_AND_REJECT
 ip6tables -A INPUT -p tcp --tcp-flags ALL NONE -j LOG_AND_REJECT
 ip6tables -A INPUT -p tcp -m tcp --tcp-flags RST RST -m limit --limit 2/second --limit-burst 2 -j ACCEPT
-ip6tables -A INPUT -m conntrack --ctstate INVALID -j LOG_AND_REJECT
+ip6tables -A INPUT -m conntrack --ctstate INVALID -j LOG_AND_DROP
 ip6tables -A INPUT -p tcp -j bad_tcp_packets
 ip6tables -A INPUT -p tcp -m recent --set --rsource --name TCP-PORTSCAN -j REJECT --reject-with tcp-reset
 ip6tables -A INPUT -p udp -m recent --set --rsource --name UDP-PORTSCAN -j REJECT --reject-with icmp6-adm-prohibited
@@ -262,16 +273,16 @@ ip6tables -A OUTPUT -p TCP --sport 0 -j LOG_AND_DROP_OUT
 ip6tables -A OUTPUT -p UDP --dport 0 -j LOG_AND_DROP_OUT
 ip6tables -A OUTPUT -p TCP --dport 0 -j LOG_AND_DROP_OUT
 
-ip6tables -A OUTPUT -m string --algo bm --hex-string '|28 29 20 7B|' -j LOG_AND_DROP
-ip6tables -A OUTPUT -m string --algo bm --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_DROP
-ip6tables -A OUTPUT -m string --algo bm --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_DROP
-ip6tables -A OUTPUT -m string --algo bm --hex-string '|72 70 63 6E 65 74 70 2E 65 78 65 00 72 70 63 6E 65 74 70 00|' -j LOG_AND_DROP
-ip6tables -A OUTPUT -m string --algo bm --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_DROP
+ip6tables -A OUTPUT -m string --algo kmp --hex-string '|28 29 20 7B|' -j LOG_AND_DROP
+ip6tables -A OUTPUT -m string --algo kmp --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_DROP
+ip6tables -A OUTPUT -m string --algo kmp --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_DROP
+ip6tables -A OUTPUT -m string --algo kmp --hex-string '|72 70 63 6E 65 74 70 2E 65 78 65 00 72 70 63 6E 65 74 70 00|' -j LOG_AND_DROP
+ip6tables -A OUTPUT -m string --algo kmp --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_DROP
 ip6tables -A OUTPUT -m u32 --u32 "8&0xFFF=0x4d5a" -j LOG_AND_DROP_OUT
 ip6tables -A OUTPUT -s ${V6BLOCKLIST} -j LOG_AND_DROP_OUT
 ip6tables -A OUTPUT -p tcp -j bad_tcp_packets
 ip6tables -A OUTPUT -m ipv6header --header frag --soft -j LOG_AND_DROP_OUT
-ip6tables -A OUTPUT -m string --algo bm --string “BitTorrent” -j LOG_AND_DROP_OUT
+ip6tables -A OUTPUT -m string --algo kmp --string “BitTorrent” -j LOG_AND_DROP_OUT
 ip6tables -A OUTPUT -s ::1/32 -p ICMP -m limit -j LOG_AND_DROP_OUT
 ip6tables -A OUTPUT -s ::1/32 -p UDP -m limit --sport 53 -j LOG_AND_DROP_OUT
 ip6tables -A OUTPUT -s ::1/32 -p TCP -m limit --sport 53 -j LOG_AND_DROP_OUT
