@@ -121,11 +121,11 @@ iptables -A INPUT -i lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 iptables -A INPUT -p icmp -s 0/0 --icmp-type 8 -j ACCEPT
 iptables -A INPUT -p icmp -s 0/0 --icmp-type 11 -j ACCEPT
 iptables -A INPUT -p icmp --icmp-type echo-request -m length --length 86:0xffff -j DROP
-iptables -A INPUT -p icmp -m string --algo kmp --from 0000 --hex-string '|08 00 45|' -j LOG_AND_REJECT
-iptables -A INPUT -p icmp -m string --algo kmp --from 0030 --hex-string '|08 0a|' -j LOG_AND_REJECT
-iptables -A INPUT -p icmp -m string --algo kmp --from 0030 --hex-string '|02 04 05 B4|' -j LOG_AND_REJECT
-iptables -A INPUT -p icmp -m string --algo kmp --from 0030 --hex-string '|03 03 07|' -j LOG_AND_REJECT
-iptables -A INPUT -p icmp -m string --algo kmp --from 0030 --hex-string '|04 02|' -j LOG_AND_REJECT
+iptables -A INPUT -p icmp -m string --algo kmp --from 0000 --hex-string '|08 00 45|' --to 0050 -j LOG_AND_REJECT
+iptables -A INPUT -p icmp -m string --algo kmp --from 0030 --hex-string '|08 0a|' --to 0050 -j LOG_AND_REJECT
+iptables -A INPUT -p icmp -m string --algo kmp --from 0030 --hex-string '|02 04 05 B4|' --to 0050 -j LOG_AND_REJECT
+iptables -A INPUT -p icmp -m string --algo kmp --from 0030 --hex-string '|03 03 07|' --to 0050 -j LOG_AND_REJECT
+iptables -A INPUT -p icmp -m string --algo kmp --from 0030 --hex-string '|04 02|' --to 0050 -j LOG_AND_REJECT
 iptables -A INPUT -p icmp -j DROP
 
 iptables -A INPUT -p UDP --sport 0 -j LOG_AND_DROP
@@ -239,11 +239,11 @@ ip6tables -A INPUT -p ipv6-icmp -s 0/0 --icmpv6-type 8 -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp -s 0/0 --icmpv6-type 11 -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp --icmpv6-type echo-request -m length --length 86:0xffff -j DROP
 ip6tables -A INPUT -p ipv6-icmp --icmpv6-type parameter-problem -j DROP
-ip6tables -A INPUT -p ipv6-icmp -m string --algo kmp --from 0000 --hex-string '|08 00 45|' -j LOG_AND_REJECT
-ip6tables -A INPUT -p ipv6-icmp -m string --algo kmp --from 0030 --hex-string '|08 0a|' -j LOG_AND_REJECT
-ip6tables -A INPUT -p ipv6-icmp -m string --algo kmp --from 0030 --hex-string '|02 04 05 B4|' -j LOG_AND_REJECT
-ip6tables -A INPUT -p ipv6-icmp -m string --algo kmp --from 0030 --hex-string '|03 03 07|' -j LOG_AND_REJECT
-ip6tables -A INPUT -p ipv6-icmp -m string --algo kmp --from 0030 --hex-string '|04 02|' -j LOG_AND_REJECT
+ip6tables -A INPUT -p ipv6-icmp -m string --algo kmp --from 0000 --hex-string '|08 00 45|' --to 0050 -j LOG_AND_REJECT
+ip6tables -A INPUT -p ipv6-icmp -m string --algo kmp --from 0030 --hex-string '|08 0a|' --to 0050 -j LOG_AND_REJECT
+ip6tables -A INPUT -p ipv6-icmp -m string --algo kmp --from 0030 --hex-string '|02 04 05 B4|' --to 0050 -j LOG_AND_REJECT
+ip6tables -A INPUT -p ipv6-icmp -m string --algo kmp --from 0030 --hex-string '|03 03 07|' --to 0050 -j LOG_AND_REJECT
+ip6tables -A INPUT -p ipv6-icmp -m string --algo kmp --from 0030 --hex-string '|04 02|' --to 0050 -j LOG_AND_REJECT
 ip6tables -A INPUT -p ipv6-icmp -m ipv6header ! --header none -j DROP
 ip6tables -A INPUT -p ipv6-icmp -j DROP
 
