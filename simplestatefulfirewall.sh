@@ -128,13 +128,12 @@ iptables -A INPUT -p icmp -m string --algo kmp --from 30 --hex-string '|03 03 07
 iptables -A INPUT -p icmp -m string --algo kmp --from 30 --hex-string '|04 02|' --to 50 -j LOG_AND_REJECT
 iptables -A INPUT -p icmp -j DROP
 
-iptables -A INPUT -p UDP --sport 0 -j LOG_AND_DROP
-iptables -A INPUT -p TCP --sport 0 -j LOG_AND_DROP
-iptables -A INPUT -p UDP --dport 0 -j LOG_AND_DROP
-iptables -A INPUT -p TCP --dport 0 -j LOG_AND_DROP
-
-# The hex string pattern can be used for non-printable characters, like |0D 0A| or |0D0A|.
-# iptables -A INPUT -p udp --dport 53 -m string --algo kmp --from 40 --to 57 --hex-string '|03|www|09|netfilter|03|org|00|' -j LOG_AND_DROP
+iptables -A INPUT -p ipv6 -j LOG_AND_DROP
+iptables -A INPUT -p udp --dport 3544 -j LOG_AND_DROP
+iptables -A INPUT -p udp --sport 0 -j LOG_AND_DROP
+iptables -A INPUT -p tcp --sport 0 -j LOG_AND_DROP
+iptables -A INPUT -p udp --dport 0 -j LOG_AND_DROP
+iptables -A INPUT -p tcp --dport 0 -j LOG_AND_DROP
 
 iptables -A INPUT ! -i lo -m string --algo kmp --hex-string '|28 29 20 7B|' -j LOG_AND_DROP_E
 iptables -A INPUT ! -i lo -m string --algo kmp --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_DROP_E
@@ -167,6 +166,8 @@ iptables -A INPUT -j LOG_AND_REJECT
 iptables -A OUTPUT -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 iptables -A OUTPUT -o lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 
+iptables -A OUTPUT -p ipv6 -j LOG_AND_DROP
+iptables -A OUTPUT -p udp --dport 3544 -j LOG_AND_DROP
 iptables -A OUTPUT ! -o lo -m string --algo kmp --hex-string '|28 29 20 7B|' -j LOG_AND_DROP_E
 iptables -A OUTPUT ! -o lo -m string --algo kmp --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_DROP_E
 iptables -A OUTPUT ! -o lo -m string --algo kmp --hex-string '|D1 E0 F5 8B 4D 0C 83 D1 00 8B EC FF 33 83 C3 04|' -j LOG_AND_DROP_E
@@ -183,10 +184,10 @@ iptables -A OUTPUT -m string --algo kmp --string “BitTorrent” -j LOG_AND_DRO
 iptables -A OUTPUT -m limit --limit 3/minute --limit-burst 3 -j LOG --log-prefix "Iptables: IPT OUTPUT packet died: "
 
 iptables -A OUTPUT -o lo -j LOG_AND_DROP_OUT
-iptables -A OUTPUT -p UDP --sport 0 -j LOG_AND_DROP_OUT
-iptables -A OUTPUT -p TCP --sport 0 -j LOG_AND_DROP_OUT
-iptables -A OUTPUT -p UDP --dport 0 -j LOG_AND_DROP_OUT
-iptables -A OUTPUT -p TCP --dport 0 -j LOG_AND_DROP_OUT
+iptables -A OUTPUT -p udp --sport 0 -j LOG_AND_DROP_OUT
+iptables -A OUTPUT -p tcp --sport 0 -j LOG_AND_DROP_OUT
+iptables -A OUTPUT -p udp --dport 0 -j LOG_AND_DROP_OUT
+iptables -A OUTPUT -p tcp --dport 0 -j LOG_AND_DROP_OUT
 
 iptables -A OUTPUT -j LOG_AND_DROP_OUT
 
@@ -230,10 +231,10 @@ ip6tables -A bad_tcp_packets -p tcp ! --syn -m state --state NEW -j DROP
 ip6tables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 ip6tables -A INPUT -i lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 
-ip6tables -A INPUT -p UDP --sport 0 -j LOG_AND_DROP
-ip6tables -A INPUT -p TCP --sport 0 -j LOG_AND_DROP
-ip6tables -A INPUT -p UDP --dport 0 -j LOG_AND_DROP
-ip6tables -A INPUT -p TCP --dport 0 -j LOG_AND_DROP
+ip6tables -A INPUT -p udp --sport 0 -j LOG_AND_DROP
+ip6tables -A INPUT -p tcp --sport 0 -j LOG_AND_DROP
+ip6tables -A INPUT -p udp --dport 0 -j LOG_AND_DROP
+ip6tables -A INPUT -p tcp --dport 0 -j LOG_AND_DROP
 
 ip6tables -A INPUT -p ipv6-icmp -s 0/0 --icmpv6-type 8 -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp -s 0/0 --icmpv6-type 11 -j ACCEPT
@@ -278,10 +279,11 @@ ip6tables -A INPUT -s ${V6BLOCKLIST} -j LOG_AND_REJECT
 ip6tables -A INPUT -j LOG_AND_REJECT
 
 ip6tables -A OUTPUT -o lo -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
-ip6tables -A OUTPUT -p UDP --sport 0 -j LOG_AND_DROP_OUT
-ip6tables -A OUTPUT -p TCP --sport 0 -j LOG_AND_DROP_OUT
-ip6tables -A OUTPUT -p UDP --dport 0 -j LOG_AND_DROP_OUT
-ip6tables -A OUTPUT -p TCP --dport 0 -j LOG_AND_DROP_OUT
+
+ip6tables -A OUTPUT -p udp --sport 0 -j LOG_AND_DROP_OUT
+ip6tables -A OUTPUT -p tcp --sport 0 -j LOG_AND_DROP_OUT
+ip6tables -A OUTPUT -p udp --dport 0 -j LOG_AND_DROP_OUT
+ip6tables -A OUTPUT -p tcp --dport 0 -j LOG_AND_DROP_OUT
 
 ip6tables -A OUTPUT -m string --algo kmp --hex-string '|28 29 20 7B|' -j LOG_AND_DROP
 ip6tables -A OUTPUT -m string --algo kmp --hex-string '|FF FF FF FF FF FF|' -j LOG_AND_DROP
@@ -293,9 +295,9 @@ ip6tables -A OUTPUT -s ${V6BLOCKLIST} -j LOG_AND_DROP_OUT
 ip6tables -A OUTPUT -p tcp -j bad_tcp_packets
 ip6tables -A OUTPUT -m ipv6header --header frag --soft -j LOG_AND_DROP_OUT
 ip6tables -A OUTPUT -m string --algo kmp --string “BitTorrent” -j LOG_AND_DROP_OUT
-ip6tables -A OUTPUT -s ::1/32 -p ICMP -m limit -j LOG_AND_DROP_OUT
-ip6tables -A OUTPUT -s ::1/32 -p UDP -m limit --sport 53 -j LOG_AND_DROP_OUT
-ip6tables -A OUTPUT -s ::1/32 -p TCP -m limit --sport 53 -j LOG_AND_DROP_OUT
+ip6tables -A OUTPUT -s ::1/32 -p ipv6-icmp -m limit -j LOG_AND_DROP_OUT
+ip6tables -A OUTPUT -s ::1/32 -p udp -m limit --sport 53 -j LOG_AND_DROP_OUT
+ip6tables -A OUTPUT -s ::1/32 -p tcp -m limit --sport 53 -j LOG_AND_DROP_OUT
 ip6tables -A OUTPUT -m limit --limit 3/minute --limit-burst 3 -j LOG --log-prefix "Iptables: IPT OUTPUT packet died: "
 
 ip6tables -A OUTPUT -j LOG_AND_DROP_OUT
