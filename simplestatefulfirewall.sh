@@ -45,6 +45,10 @@ if ps -acx | grep -q "[s]shd-session"; then
 	exit 1
 fi
 
+if ps -acx | grep -q "[s]shd"; then
+	exit 1
+fi
+
 modprobe br_netfilter
 modprobe nf_conntrack
 modprobe xt_LOG
