@@ -45,7 +45,7 @@ if ps -acx | grep -q "[s]shd-session"; then
 	exit 1
 fi
 
-if ps -acx | grep -q "[s]shd"; then
+if s -acx | grep -q "[s]shd"; then
 	exit 1
 fi
 
@@ -64,6 +64,11 @@ iptables -X
 iptables -t raw -X
 iptables -t nat -X
 iptables -t mangle -X
+
+#iptables -P FORWARD ACCEPT
+#iptables -P OUTPUT ACCEPT
+#iptables -P INPUT ACCEPT
+# Do not forget to remove iptables.rules files
 
 ip6tables -F
 ip6tables -t raw -F
